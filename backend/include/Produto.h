@@ -21,7 +21,7 @@ class Produto{
         double getPreco() const;
         string getCategoria() const;
         void setPreco(double novoPreco);
-        string toString();
+        string toString() const;
 
 };
 

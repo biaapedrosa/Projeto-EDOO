@@ -40,7 +40,7 @@ void Produto::setPreco(double novoPreco){
 }
 
 // Função para retornar uma descrição formatada
-string Produto::toString(){
+string Produto::toString() const{
     return "Produto: " + nome_produto +
             " | Preco: " + to_string(preco) + // "Preço na forma de string"
             " | Categoria: " +categoria;
