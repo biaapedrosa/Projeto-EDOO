@@ -19,6 +19,8 @@ class Estoque{
         void listarProdutos();
         Produto* buscarProduto(const string& nome);
 
+        vector<string> verificarItensBaixos();
+
 };
 
 #endif

@@ -23,9 +23,8 @@ static std::string agora() {
     return std::string(buf);
 }
 
-Pedido::Pedido(int m_id, const int m_numeorMesa)
-    :m_id(m_id), m_status(StatusPedido::ABERTO),
-      m_total(0.0), m_numeroMesa(m_numeroMesa)
+Pedido::Pedido(int id, int numeroMesa)
+    : m_id(id), m_numeroMesa(numeroMesa), m_status(StatusPedido::ABERTO), m_total(0.0)
 {
     m_dataHora = agora();
 }
@@ -79,14 +78,29 @@ void Pedido::cancelar() {
     m_status = StatusPedido::CANCELADO;
 }
 
+double Pedido::getValorTotal() const {
+    return m_total; 
+}
+
+std::vector<Produto> Pedido::getProdutos() const {
+    std::vector<Produto> produtos_do_pedido;
+    
+    for (const auto& item : m_itens) {
+        if (item.getProduto() != nullptr) {
+            produtos_do_pedido.push_back(*(item.getProduto()));
+        }
+    }
+    return produtos_do_pedido;
+}
+
 std::string Pedido::toJson() const {
     std::ostringstream oss;
     oss << "{"
-        << "\"id\":"          << m_id                           << ","
-        << "\"Mesa\":\""      << m_numeroMesa                  << "\","
-        << "\"status\":\""    << statusParaString(m_status)      << "\","
-        << "\"total\":"       << m_total                         << ","
-        << "\"dataHora\":\""  << m_dataHora                      << "\","
+        << "\"id\":"          << m_id                                << ","
+        << "\"Mesa\":\""      << m_numeroMesa                        << "\","
+        << "\"status\":\""    << statusParaString(m_status)          << "\","
+        << "\"total\":"       << m_total                             << ","
+        << "\"dataHora\":\""  << m_dataHora                          << "\","
         << "\"itens\":[";
 
     for (size_t i = 0; i < m_itens.size(); ++i) {
