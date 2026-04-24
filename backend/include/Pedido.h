@@ -1,5 +1,6 @@
 #pragma once
 #include "ItemPedido.h"   
+#include "Produto.h"
 #include <vector>
 #include <string>
  
@@ -26,7 +27,7 @@ private:
     void recalcularTotal();   // metodo privado auxiliar
  
 public:
-    Pedido(int m_id, const int numeroMesa);
+    Pedido(int id, const int numeroMesa);
  
     // adiciona um item e lança se quantidade <= 0
     void adicionarItem(const Produto* produto, int quantidade);
@@ -48,5 +49,8 @@ public:
     const std::string&             getDataHora()    const { return m_dataHora; }
     const std::vector<ItemPedido>& getItens()       const { return m_itens; }
  
+    double getValorTotal() const;
+    std::vector<Produto> getProdutos() const;
+
     std::string toJson() const;
 };

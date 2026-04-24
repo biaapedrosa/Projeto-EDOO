@@ -33,3 +33,9 @@ Produto* Estoque::buscarProduto(const string& nome){
     // Retorna caso não encontre o produto
     return nullptr;
 }
+
+vector<string> Estoque::verificarItensBaixos() {
+    vector<string> itensBaixos;
+
+    return itensBaixos;
+}
