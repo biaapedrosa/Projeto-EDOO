@@ -4,16 +4,16 @@
  
 class ItemPedido {
 private:
-    const Produto* m_produto;    // associação — não possui o Produto
-    int           m_quantidade;
+    Produto        m_produto;    // associação — não possui o Produto
+    int            m_quantidade;
     double         m_subtotal;   // calculado no construtor
- 
+    
 public:
-    ItemPedido(const Produto* produto, int quantidade);
+    ItemPedido(const Produto& produto, int quantidade);
  
-    const Produto* getProduto()    const { return m_produto; }
-    int            getQuantidade() const { return m_quantidade; }
-    double         getSubtotal()   const { return m_subtotal; }
+    const Produto& getProduto() const;    
+    int            getQuantidade() const; 
+    double         getSubtotal() const;   
  
     // recalcula o subtotal (se o preço do produto mudar)
     void recalcularSubtotal();

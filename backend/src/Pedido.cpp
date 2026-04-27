@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <ctime>
-
+#include <iomanip>
 // status 
 std::string statusParaString(StatusPedido s) {
     switch (s) {
@@ -35,9 +35,7 @@ void Pedido::recalcularTotal() {
         m_total += item.getSubtotal();
 }
 
-void Pedido::adicionarItem(const Produto* produto, int quantidade) {
-    if (!produto)
-        throw std::invalid_argument("Produto inválido.");
+void Pedido::adicionarItem(const Produto& produto, int quantidade) {
     if (quantidade <= 0)
         throw std::invalid_argument("Quantidade deve ser positiva.");
     if (m_status != StatusPedido::ABERTO)
@@ -45,7 +43,7 @@ void Pedido::adicionarItem(const Produto* produto, int quantidade) {
 
     // Verifica se o produto já está no pedido — soma a quantidade
     for (auto& item : m_itens) {
-        if (item.getProduto()->getNome() == produto->getNome()) {
+        if (item.getProduto().getNome() == produto.getNome()) {
             int novaQtd = item.getQuantidade() + quantidade;
             item = ItemPedido(produto, novaQtd);
             recalcularTotal();
@@ -82,22 +80,14 @@ double Pedido::getValorTotal() const {
     return m_total; 
 }
 
-std::vector<Produto> Pedido::getProdutos() const {
-    std::vector<Produto> produtos_do_pedido;
-    
-    for (const auto& item : m_itens) {
-        if (item.getProduto() != nullptr) {
-            produtos_do_pedido.push_back(*(item.getProduto()));
-        }
-    }
-    return produtos_do_pedido;
-}
 
 std::string Pedido::toJson() const {
     std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+    
     oss << "{"
         << "\"id\":"          << m_id                                << ","
-        << "\"Mesa\":\""      << m_numeroMesa                        << "\","
+        << "\"mesa\":\""      << m_numeroMesa                        << "\","
         << "\"status\":\""    << statusParaString(m_status)          << "\","
         << "\"total\":"       << m_total                             << ","
         << "\"dataHora\":\""  << m_dataHora                          << "\","
