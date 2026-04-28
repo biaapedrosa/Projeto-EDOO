@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <sstream>
 
-<<<<<<< HEAD
 using namespace std;
 
 void Estoque::adicionarProduto(const Produto& p){
@@ -31,32 +30,11 @@ Produto* Estoque::buscarProduto(const string& nome){
         // Compara o nome informado com o nome do produto
         if (nome == p.getNome()){
             return &p;
-=======
-void Estoque::adicionarProduto(const Produto& p) {
-    produtos.push_back(p);
-}
-
-void Estoque::listarProdutos() {
-    if (produtos.empty()) {
-        std::cout << "Nenhum produto cadastrado." << std::endl;
-    } else {
-        for (size_t i = 0; i < produtos.size(); i++) {
-            std::cout << produtos[i].toString() << std::endl;
-        }
-    }
-}
-
-Produto* Estoque::buscarProduto(const std::string& nome) {
-    for (size_t i = 0; i < produtos.size(); i++) {
-        if (nome == produtos[i].getNome()) {
-            return &produtos[i];
->>>>>>> aa87f4981fdc770e018264ba99bb65f589b7e2c2
         }
     }
     return nullptr;
 }
 
-<<<<<<< HEAD
 Produto* Estoque::buscarProdutoPorId(int id){
     for (auto& p : m_produtos){
         if (id == p.getId()){
@@ -65,10 +43,6 @@ Produto* Estoque::buscarProdutoPorId(int id){
     }
     return nullptr;
 }
-=======
-std::vector<std::string> Estoque::verificarItensBaixos() const {
-    std::vector<std::string> itensBaixos;
->>>>>>> aa87f4981fdc770e018264ba99bb65f589b7e2c2
 
 const vector<Produto>& Estoque::getProdutos() const{
     return m_produtos;
