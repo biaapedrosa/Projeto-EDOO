@@ -5,22 +5,16 @@
 #include <vector>
 #include "Produto.h"
 
-using namespace std;
+class Estoque {
+private:
+    std::vector<Produto> produtos;
 
-// Classe responsável por gerenciar o estoque de produtos
-class Estoque{
-    private:
-        // Vetor que armazena os produtos cadastrados
-        vector<Produto> produtos;
+public:
+    void adicionarProduto(const Produto& p);
+    void listarProdutos();
+    Produto* buscarProduto(const std::string& nome);
 
-    public:
-        // Métodos
-        void adicionarProduto(const Produto& p);
-        void listarProdutos();
-        Produto* buscarProduto(const string& nome);
-
-        vector<string> verificarItensBaixos();
-
+    std::vector<std::string> verificarItensBaixos() const;
 };
 
 #endif
