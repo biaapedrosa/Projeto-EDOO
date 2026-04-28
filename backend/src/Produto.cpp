@@ -1,49 +1,57 @@
 #include "Produto.h"
-#include <string>
+#include <stdexcept>
+#include <sstream>
+#include <iomanip>
 
-using namespace std;
+Produto::Produto(int id, const std::string& nome, double p,
+                 const std::string& ctg, int qtd)
+    : id(id), nome_produto(nome), categoria(ctg)
+{
+    // Validação no construtor — preço e quantidade não podem ser negativos
+    if (p < 0.0)
+        throw std::invalid_argument("Preço não pode ser negativo.");
+    if (qtd < 0)
+        throw std::invalid_argument("Quantidade não pode ser negativa.");
 
-Produto::Produto(int id, string nome, double p, string c){
-    this->id = id; // this->id atributo da classe
-    
-    nome_produto = nome;
-
-    if (p < 0)
-        preco = 0.0;
-    else
-        preco = p;
-    
-    categoria = c;
-
+    preco     = p;
+    quantidade_em_estoque = qtd;
 }
 
-// Função para colocar nome do produto
-string Produto::getNome() const{
-    return nome_produto;
+int Produto::getId() const {return id;}
+const std::string& Produto::getNome() const {return nome_produto;}
+double Produto::getPreco() const {return preco;}
+const std::string& Produto::getCategoria() const {return categoria;}
+int Produto::getQuantidadeEmEstoque() const {return quantidade_em_estoque;}
+
+void Produto::setPreco(double novoPreco) {
+    if (novoPreco < 0.0)
+        throw std::invalid_argument("Preço não pode ser negativo.");
+    preco = novoPreco;
 }
 
-// Função para colocar preço do produto
-double Produto::getPreco() const{
-    return preco;
+void Produto::setQuantidadeEmEstoque(int novaQtd) {
+    if (novaQtd < 0)
+        throw std::invalid_argument("Quantidade não pode ser negativa.");
+    quantidade_em_estoque = novaQtd;
 }
 
-// Função para colocar categoria do produto
-string Produto::getCategoria() const{
-    return categoria;
+// Serializa para JSON — usado pela API REST
+std::string Produto::toJson() const {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+    oss << "{"
+        << "\"id\":" << id << ","
+        << "\"nome\":\"" << nome_produto << "\","
+        << "\"preco\":" << preco << ","
+        << "\"categoria\":\"" << categoria << "\","
+        << "\"quantidade\":" << quantidade_em_estoque
+        << "}";
+    return oss.str();
 }
 
-// Função para validar e atualizar o preço
-void Produto::setPreco(double novoPreco){
-    if (novoPreco >= 0){
-        preco = novoPreco;
-    }
+std::string Produto::toString() const {
+    return "Produto[" + std::to_string(id) + "]: " + nome_produto
+         + " | R$ " + std::to_string(preco)
+         + " | " + categoria
+         + " | Estoque: " + std::to_string(quantidade_em_estoque);
 }
-
-// Função para retornar uma descrição formatada
-string Produto::toString() const{
-    return "Produto: " + nome_produto +
-            " | Preco: " + to_string(preco) + // "Preço na forma de string"
-            " | Categoria: " +categoria;
-}
-
-
