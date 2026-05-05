@@ -50,7 +50,6 @@ public:
     const std::vector<ItemPedido>& getItens()       const { return m_itens; }
  
     double getValorTotal() const;
-    std::vector<Produto> getProdutos() const;
 
     std::string toJson() const;
 };
