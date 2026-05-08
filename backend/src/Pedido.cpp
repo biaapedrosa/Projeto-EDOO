@@ -43,9 +43,9 @@ void Pedido::adicionarItem(const Produto& produto, int quantidade) {
 
     // Verifica se o produto já está no pedido — soma a quantidade
     for (auto& item : m_itens) {
-        if (item.getProduto().getNome() == produto.getNome()) {
+        if (item.getProdutoId() == produto.getId()) { 
             int novaQtd = item.getQuantidade() + quantidade;
-            item = ItemPedido(produto, novaQtd);
+            item = ItemPedido(produto, novaQtd); 
             recalcularTotal();
             return;
         }
@@ -84,10 +84,9 @@ double Pedido::getValorTotal() const {
 std::string Pedido::toJson() const {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2);
-    
     oss << "{"
         << "\"id\":"          << m_id                                << ","
-        << "\"mesa\":\""      << m_numeroMesa                        << "\","
+        << "\"mesa\":\""      << m_numeroMesa                        << ","
         << "\"status\":\""    << statusParaString(m_status)          << "\","
         << "\"total\":"       << m_total                             << ","
         << "\"dataHora\":\""  << m_dataHora                          << "\","

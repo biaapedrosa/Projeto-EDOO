@@ -4,9 +4,8 @@
 #include <iomanip>
 
 // Produto (classe base)
-Produto::Produto(int id, const std::string& nome, double p,
-                 const std::string& ctg, int qtd)
-    : id(id), nome_produto(nome), categoria(ctg)
+Produto::Produto(int id, const std::string& nome, double p, const std::string& ctg, int qtd)
+    : id(id), nome_produto(nome), preco(p), categoria(ctg), quantidade_em_estoque(qtd)
 {
     // Validação no construtor — preço e quantidade não podem ser negativos
     if (p < 0.0)
@@ -14,8 +13,6 @@ Produto::Produto(int id, const std::string& nome, double p,
     if (qtd < 0)
         throw std::invalid_argument("Quantidade não pode ser negativa.");
 
-    preco = p;
-    quantidade_em_estoque = qtd;
 }
 
 int Produto::getId() const {return id;}
@@ -69,9 +66,7 @@ Bebida::Bebida(int id, const std::string& nome, double preco,
                const std::string& categoria, int qtd,
                int volume_ml, const std::string& tipo_bebida, bool alcoolica)
     : Produto(id, nome, preco, categoria, qtd),
-      volume_ml(volume_ml),
-      tipo_bebida(tipo_bebida),
-      alcoolica(alcoolica)
+      volume_ml(volume_ml), tipo_bebida(tipo_bebida), alcoolica(alcoolica)
 {
     if (volume_ml <= 0)
         throw std::invalid_argument("Volume deve ser positivo.");
