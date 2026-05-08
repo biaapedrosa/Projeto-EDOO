@@ -4,16 +4,26 @@
  
 class ItemPedido {
 private:
-    Produto        m_produto;    // associação — não possui o Produto
+    std::string    m_nomeProduto;
+    double         m_preco;
+    int            m_produtoId;      
     int            m_quantidade;
     double         m_subtotal;   // calculado no construtor
     
 public:
+    // Construtor principal
     ItemPedido(const Produto& produto, int quantidade);
+
+    //construtor para a construção do banco de dados
+    ItemPedido(int produtoId, const std::string& nome, double precoUnit, int quantidade);
  
-    const Produto& getProduto() const;    
-    int            getQuantidade() const; 
-    double         getSubtotal() const;   
+    //getters
+    int            getProdutoId()  const;
+    const std::string& getNomeProduto() const;
+    double         getPreco()  const;
+    int            getQuantidade() const;
+    double         getSubtotal()   const;
+ 
  
     // recalcula o subtotal (se o preço do produto mudar)
     void recalcularSubtotal();
