@@ -9,8 +9,6 @@ const api = axios.create({
 });
 
 // Interceptor — injeta o token em TODA requisição automaticamente
-// Isso resolve o 401 em GET /produtos, POST /produtos, DELETE /produtos/:id,
-// PATCH /estoque/:id/quantidade e PATCH /estoque/:id/preco
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -19,12 +17,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Serviço de autenticação — registro e login de barracas
+export const authService = {
+    registrar: (dados) => api.post('/auth/registro', dados),
+    login:     (dados) => api.post('/auth/login', dados),
+};
+
+// Serviço de produtos — CRUD completo
 export const produtoService = {
     getProdutos:   ()        => api.get('/produtos'),
     saveProduto:   (produto) => api.post('/produtos', produto),
     deleteProduto: (id)      => api.delete(`/produtos/${id}`),
 };
 
+// Serviço de estoque — atualizar preço e quantidade
 export const estoqueService = {
     atualizarPreco:      (id, novoPreco) => api.patch(`/estoque/${id}/preco`,      { preco: novoPreco }),
     atualizarQuantidade: (id, novaQtd)   => api.patch(`/estoque/${id}/quantidade`, { quantidade: novaQtd }),
@@ -42,6 +48,16 @@ export const pedidoService = {
 
 export const relatorioService = {
     getDadosGerais: () => api.get('/relatorio'),
+// Serviço de pedidos — criar, listar e atualizar status
+export const pedidoService = {
+    getPedidos:      ()         => api.get('/pedidos'),
+    criarPedido:     (pedido)   => api.post('/pedidos', pedido),
+    atualizarStatus: (id, status) => api.patch(`/pedidos/${id}/status`, { status }),
+};
+
+// Serviço de relatório — dados consolidados do dia
+export const relatorioService = {
+    getRelatorio: () => api.get('/relatorio'),
 };
 
 export default api;
