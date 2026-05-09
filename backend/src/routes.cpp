@@ -47,8 +47,6 @@ static string hashSenha(const string& senha) {
 }
 
 // MIDDLEWARE DE AUTENTICAÇÃO
-// Extrai o token do header "Authorization: Bearer <token>"
-// e retorna o barraca_id correspondente, ou -1 se inválido.
 static int autenticar(const httplib::Request& req, httplib::Response& res, Database& db) {
     auto it = req.headers.find("Authorization");
     if (it == req.headers.end()) {
@@ -58,7 +56,6 @@ static int autenticar(const httplib::Request& req, httplib::Response& res, Datab
     }
 
     string auth = it->second;
-    // Remove o prefixo "Bearer " se presente
     string prefix = "Bearer ";
     string token = (auth.substr(0, prefix.size()) == prefix)
                    ? auth.substr(prefix.size())
@@ -81,9 +78,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         res.status = 204;
     });
 
-    //AUTENTICAÇÃO
-
-    // POST /auth/registro — cria uma nova barraca
+    // --- AUTENTICAÇÃO ---
     svr.Post("/auth/registro", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         try {
@@ -101,7 +96,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
                 res.status = 201;
                 res.set_content("{\"mensagem\":\"Barraca registrada com sucesso\"}", "application/json");
             } else {
-                res.status = 409; // 409 Conflict
+                res.status = 409;
                 res.set_content("{\"erro\":\"Usuário já existe\"}", "application/json");
             }
         } catch (const exception& e) {
@@ -110,7 +105,6 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // POST /auth/login — autentica e retorna o token
     svr.Post("/auth/login", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         try {
@@ -130,7 +124,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    //PRODUTOS
+    // --- PRODUTOS ---
     svr.Get("/produtos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -202,7 +196,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    //ESTOQUE
+    // --- ESTOQUE ---
     svr.Patch("/estoque/:id/preco", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -241,7 +235,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    //PEDIDOS
+    // --- PEDIDOS ---
     svr.Get("/pedidos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -266,7 +260,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         int bid = autenticar(req, res, db);
         if (bid == -1) return;
         try {
-            int mesa     = static_cast<int>(getJsonNumber(req.body, "mesa"));
+            int mesa     = static_cast<int>(getJsonNumber(req.body, "numeroMesa"));
             int pedidoId = db.inserirPedido(mesa, bid);
 
             string body = req.body;
@@ -277,11 +271,13 @@ void registrarRotas(httplib::Server& svr, Database& db) {
                     size_t inicio = body.find("{", pos);
                     size_t fim    = body.find("}", inicio);
                     if (inicio == string::npos || fim == string::npos) break;
+                    
                     string item = body.substr(inicio, fim - inicio + 1);
                     int prodId  = static_cast<int>(getJsonNumber(item, "produtoId"));
                     int qtd     = static_cast<int>(getJsonNumber(item, "quantidade"));
-                    double sub  = getJsonNumber(item, "subtotal");
-                    db.inserirItemPedido(pedidoId, prodId, qtd, sub);
+
+                    db.inserirItemPedido(pedidoId, prodId, qtd, 0.0);
+                    
                     pos = fim + 1;
                 }
             }
@@ -301,6 +297,9 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         try {
             int    id     = stoi(req.path_params.at("id"));
             string status = getJsonString(req.body, "status");
+
+            if (status.empty()) status = "EM_PREPARO"; 
+
             if (db.atualizarStatusPedido(id, status, bid)) {
                 res.set_content("{\"mensagem\":\"Status atualizado\"}", "application/json");
             } else {
@@ -313,7 +312,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    //RELATÓRIO
+    // --- RELATÓRIO ---
     svr.Get("/relatorio", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
