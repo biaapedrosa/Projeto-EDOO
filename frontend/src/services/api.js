@@ -36,6 +36,18 @@ export const estoqueService = {
     atualizarQuantidade: (id, novaQtd)   => api.patch(`/estoque/${id}/quantidade`, { quantidade: novaQtd }),
 };
 
+export const pedidoService = {
+    getPedidos: () => api.get('/pedidos'),
+
+    criarPedido: (pedido) => api.post('/pedidos', pedido),
+
+    avancarStatus: (id) => api.patch(`/pedidos/${id}/avancar`),
+
+    cancelarPedido: (id) => api.patch(`/pedidos/${id}/cancelar`),
+};
+
+export const relatorioService = {
+    getDadosGerais: () => api.get('/relatorio'),
 // Serviço de pedidos — criar, listar e atualizar status
 export const pedidoService = {
     getPedidos:      ()         => api.get('/pedidos'),
