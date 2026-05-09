@@ -5,17 +5,14 @@
 
 using namespace std;
 
-// CORS 
-// Adiciona os headers de CORS em todas as respostas
-// Sem isso o navegador bloqueia as requisições do React (porta 5173) para o backend C++ (porta 8080) por política de segurança.
+//CORS
 static void setCors(httplib::Response& res) {
     res.set_header("Access-Control-Allow-Origin",  "*");
     res.set_header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-// Parser JSON simples
-// Extrai o valor de um campo string de um JSON no formato "chave":"valor"
+//PARSER JSON SIMPLES
 static string getJsonString(const string& json, const string& chave) {
     string busca = "\"" + chave + "\":\"";
     size_t pos = json.find(busca);
@@ -25,7 +22,6 @@ static string getJsonString(const string& json, const string& chave) {
     return json.substr(pos, fim - pos);
 }
 
-// Extrai o valor de um campo numérico de um JSON no formato "chave":valor
 static double getJsonNumber(const string& json, const string& chave) {
     string busca = "\"" + chave + "\":";
     size_t pos = json.find(busca);
@@ -34,7 +30,6 @@ static double getJsonNumber(const string& json, const string& chave) {
     return stod(json.substr(pos));
 }
 
-// Extrai o valor de um campo booleano de um JSON no formato "chave":true/false
 static bool getJsonBool(const string& json, const string& chave) {
     string busca = "\"" + chave + "\":";
     size_t pos = json.find(busca);
@@ -43,22 +38,105 @@ static bool getJsonBool(const string& json, const string& chave) {
     return json.substr(pos, 4) == "true";
 }
 
-// Registro de rotas
+// HASH SIMPLES
+static string hashSenha(const string& senha) {
+    unsigned long h = 5381;
+    for (char c : senha)
+        h = ((h << 5) + h) + static_cast<unsigned char>(c);
+    return to_string(h);
+}
+
+// MIDDLEWARE DE AUTENTICAÇÃO
+// Extrai o token do header "Authorization: Bearer <token>"
+// e retorna o barraca_id correspondente, ou -1 se inválido.
+static int autenticar(const httplib::Request& req, httplib::Response& res, Database& db) {
+    auto it = req.headers.find("Authorization");
+    if (it == req.headers.end()) {
+        res.status = 401;
+        res.set_content("{\"erro\":\"Token não fornecido\"}", "application/json");
+        return -1;
+    }
+
+    string auth = it->second;
+    // Remove o prefixo "Bearer " se presente
+    string prefix = "Bearer ";
+    string token = (auth.substr(0, prefix.size()) == prefix)
+                   ? auth.substr(prefix.size())
+                   : auth;
+
+    int id = db.getBarracaIdPorToken(token);
+    if (id == -1) {
+        res.status = 401;
+        res.set_content("{\"erro\":\"Token inválido\"}", "application/json");
+    }
+    return id;
+}
+
+//REGISTRO DE ROTAS
 void registrarRotas(httplib::Server& svr, Database& db) {
 
-    // Preflight CORS — o navegador envia OPTIONS antes de POST/PATCH/DELETE para verificar se o servidor aceita CORS
+    // Preflight CORS
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
         setCors(res);
         res.status = 204;
     });
 
+    //AUTENTICAÇÃO
 
-    // --- PRODUTOS ----------------------------
-    // GET /produtos — retorna todos os produtos como array JSON
-    svr.Get("/produtos", [&db](const httplib::Request&, httplib::Response& res) {
+    // POST /auth/registro — cria uma nova barraca
+    svr.Post("/auth/registro", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         try {
-            auto produtos = db.listarProdutosJson();
+            string nome    = getJsonString(req.body, "nome");
+            string usuario = getJsonString(req.body, "usuario");
+            string senha   = getJsonString(req.body, "senha");
+
+            if (nome.empty() || usuario.empty() || senha.empty()) {
+                res.status = 400;
+                res.set_content("{\"erro\":\"nome, usuario e senha são obrigatórios\"}", "application/json");
+                return;
+            }
+
+            if (db.registrarBarraca(nome, usuario, hashSenha(senha))) {
+                res.status = 201;
+                res.set_content("{\"mensagem\":\"Barraca registrada com sucesso\"}", "application/json");
+            } else {
+                res.status = 409; // 409 Conflict
+                res.set_content("{\"erro\":\"Usuário já existe\"}", "application/json");
+            }
+        } catch (const exception& e) {
+            res.status = 500;
+            res.set_content("{\"erro\":\"" + string(e.what()) + "\"}", "application/json");
+        }
+    });
+
+    // POST /auth/login — autentica e retorna o token
+    svr.Post("/auth/login", [&db](const httplib::Request& req, httplib::Response& res) {
+        setCors(res);
+        try {
+            string usuario = getJsonString(req.body, "usuario");
+            string senha   = getJsonString(req.body, "senha");
+
+            string token = db.loginBarraca(usuario, hashSenha(senha));
+            if (token.empty()) {
+                res.status = 401;
+                res.set_content("{\"erro\":\"Usuário ou senha inválidos\"}", "application/json");
+            } else {
+                res.set_content("{\"token\":\"" + token + "\"}", "application/json");
+            }
+        } catch (const exception& e) {
+            res.status = 500;
+            res.set_content("{\"erro\":\"" + string(e.what()) + "\"}", "application/json");
+        }
+    });
+
+    //PRODUTOS
+    svr.Get("/produtos", [&db](const httplib::Request& req, httplib::Response& res) {
+        setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
+        try {
+            auto produtos = db.listarProdutosJson(bid);
             string json = "[";
             for (size_t i = 0; i < produtos.size(); ++i) {
                 json += produtos[i];
@@ -72,35 +150,33 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // POST /produtos — cadastra um novo produto
-    // Espera JSON com: tipo, nome, preco, categoria, quantidade + campos extras dependendo do tipo (Bebida ou Comida)
     svr.Post("/produtos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            string body = req.body;
-            string tipo = getJsonString(body, "tipo");
-            string nome = getJsonString(body, "nome");
+            string body     = req.body;
+            string tipo     = getJsonString(body, "tipo");
+            string nome     = getJsonString(body, "nome");
             string categoria = getJsonString(body, "categoria");
-            double preco = getJsonNumber(body, "preco");
-            int qtd  = static_cast<int>(getJsonNumber(body, "quantidade"));
-
-            // Gera um id baseado no timestamp — simples e sem colisão
-            int id = static_cast<int>(time(nullptr));
+            double preco    = getJsonNumber(body, "preco");
+            int qtd         = static_cast<int>(getJsonNumber(body, "quantidade"));
+            int id          = static_cast<int>(time(nullptr));
 
             if (tipo == "Bebida Alcoolica" || tipo == "Bebida Nao Alcoolica") {
-                int volume = static_cast<int>(getJsonNumber(body, "volume_ml"));
-                string tipoBebida = getJsonString(body, "tipo_bebida");
-                bool alcoolica = getJsonBool(body, "alcoolica");
-                Bebida b(id, nome, preco, categoria, qtd, volume, tipoBebida, alcoolica);
-                db.inserirProduto(b, tipo, volume, tipoBebida, alcoolica, false, "");
+                int vol         = static_cast<int>(getJsonNumber(body, "volume_ml"));
+                string tipoBeb  = getJsonString(body, "tipo_bebida");
+                bool alcoolica  = getJsonBool(body, "alcoolica");
+                Bebida b(id, nome, preco, categoria, qtd, vol, tipoBeb, alcoolica);
+                db.inserirProduto(b, tipo, vol, tipoBeb, alcoolica, false, "", bid);
             } else {
-                bool vegana = getJsonBool (body, "vegana");
-                string porcao = getJsonString(body, "porcao");
+                bool vegana    = getJsonBool(body, "vegana");
+                string porcao  = getJsonString(body, "porcao");
                 Comida c(id, nome, preco, categoria, qtd, vegana, porcao);
-                db.inserirProduto(c, "Comida", 0, "", false, vegana, porcao);
+                db.inserirProduto(c, "Comida", 0, "", false, vegana, porcao, bid);
             }
 
-            res.status = 201; // 201 Created
+            res.status = 201;
             res.set_content("{\"mensagem\":\"Produto cadastrado com sucesso\"}", "application/json");
         } catch (const exception& e) {
             res.status = 400;
@@ -108,12 +184,13 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // DELETE /produtos/:id — remove um produto pelo id
     svr.Delete("/produtos/:id", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
             int id = stoi(req.path_params.at("id"));
-            if (db.removerProduto(id)) {
+            if (db.removerProduto(id, bid)) {
                 res.set_content("{\"mensagem\":\"Produto removido\"}", "application/json");
             } else {
                 res.status = 404;
@@ -125,15 +202,15 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-  
-    // --- ESTOQUE ----------------------------
-    // PATCH /estoque/:id/preco — atualiza o preço de um produto
+    //ESTOQUE
     svr.Patch("/estoque/:id/preco", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            int id = stoi(req.path_params.at("id"));
+            int id     = stoi(req.path_params.at("id"));
             double preco = getJsonNumber(req.body, "preco");
-            if (db.atualizarPrecoProduto(id, preco)) {
+            if (db.atualizarPrecoProduto(id, preco, bid)) {
                 res.set_content("{\"mensagem\":\"Preço atualizado\"}", "application/json");
             } else {
                 res.status = 404;
@@ -145,13 +222,14 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // PATCH /estoque/:id/quantidade — atualiza a quantidade de um produto
     svr.Patch("/estoque/:id/quantidade", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            int id = stoi(req.path_params.at("id"));
+            int id  = stoi(req.path_params.at("id"));
             int qtd = static_cast<int>(getJsonNumber(req.body, "quantidade"));
-            if (db.atualizarQuantidadeProduto(id, qtd)) {
+            if (db.atualizarQuantidadeProduto(id, qtd, bid)) {
                 res.set_content("{\"mensagem\":\"Quantidade atualizada\"}", "application/json");
             } else {
                 res.status = 404;
@@ -163,13 +241,13 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    
-    // --- PEDIDOS ----------------------------
-    // GET /pedidos — retorna todos os pedidos como array JSON
-    svr.Get("/pedidos", [&db](const httplib::Request&, httplib::Response& res) {
+    //PEDIDOS
+    svr.Get("/pedidos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            auto pedidos = db.listarPedidosJson();
+            auto pedidos = db.listarPedidosJson(bid);
             string json = "[";
             for (size_t i = 0; i < pedidos.size(); ++i) {
                 json += pedidos[i];
@@ -183,15 +261,14 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // POST /pedidos — cria um novo pedido com itens
-    // Espera JSON com: mesa (int) e itens (array de {produtoId, quantidade, subtotal})
     svr.Post("/pedidos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            int mesa = static_cast<int>(getJsonNumber(req.body, "mesa"));
-            int pedidoId = db.inserirPedido(mesa);
+            int mesa     = static_cast<int>(getJsonNumber(req.body, "mesa"));
+            int pedidoId = db.inserirPedido(mesa, bid);
 
-            // Percorre o array de itens no JSON e insere cada um
             string body = req.body;
             size_t pos = body.find("\"itens\":[");
             if (pos != string::npos) {
@@ -200,12 +277,10 @@ void registrarRotas(httplib::Server& svr, Database& db) {
                     size_t inicio = body.find("{", pos);
                     size_t fim    = body.find("}", inicio);
                     if (inicio == string::npos || fim == string::npos) break;
-
                     string item = body.substr(inicio, fim - inicio + 1);
-                    int prodId = static_cast<int>(getJsonNumber(item, "produtoId"));
-                    int qtd = static_cast<int>(getJsonNumber(item, "quantidade"));
-                    double sub = getJsonNumber(item, "subtotal");
-
+                    int prodId  = static_cast<int>(getJsonNumber(item, "produtoId"));
+                    int qtd     = static_cast<int>(getJsonNumber(item, "quantidade"));
+                    double sub  = getJsonNumber(item, "subtotal");
                     db.inserirItemPedido(pedidoId, prodId, qtd, sub);
                     pos = fim + 1;
                 }
@@ -219,14 +294,14 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // PATCH /pedidos/:id/status — atualiza o status de um pedido
-    // Espera JSON com: status ("EM_PREPARO", "ENTREGUE" ou "CANCELADO")
     svr.Patch("/pedidos/:id/status", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
             int    id     = stoi(req.path_params.at("id"));
             string status = getJsonString(req.body, "status");
-            if (db.atualizarStatusPedido(id, status)) {
+            if (db.atualizarStatusPedido(id, status, bid)) {
                 res.set_content("{\"mensagem\":\"Status atualizado\"}", "application/json");
             } else {
                 res.status = 404;
@@ -238,13 +313,13 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-
-    // --- RELATÓRIO ----------------------------
-    // GET /relatorio — retorna dados consolidados do dia
-    svr.Get("/relatorio", [&db](const httplib::Request&, httplib::Response& res) {
+    //RELATÓRIO
+    svr.Get("/relatorio", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        int bid = autenticar(req, res, db);
+        if (bid == -1) return;
         try {
-            res.set_content(db.getRelatorioJson(), "application/json");
+            res.set_content(db.getRelatorioJson(bid), "application/json");
         } catch (const exception& e) {
             res.status = 500;
             res.set_content("{\"erro\":\"" + string(e.what()) + "\"}", "application/json");
