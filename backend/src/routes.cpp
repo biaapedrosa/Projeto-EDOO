@@ -276,7 +276,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
                     int prodId  = static_cast<int>(getJsonNumber(item, "produtoId"));
                     int qtd     = static_cast<int>(getJsonNumber(item, "quantidade"));
 
-                    db.inserirItemPedido(pedidoId, prodId, qtd, 0.0);
+                    double sub = getJsonNumber(item, "subtotal");
+                    db.inserirItemPedido(pedidoId, prodId, qtd, sub);
                     
                     pos = fim + 1;
                 }
