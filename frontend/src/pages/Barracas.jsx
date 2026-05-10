@@ -30,6 +30,7 @@ export default function Barracas() {
       const res = await authService.login({ usuario, senha });
       // Salva o token no localStorage — o interceptor do api.js injeta em todas as requisições
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('nomeBarraca', usuario);
       setMensagem('Login realizado com sucesso!');
       setUsuario(''); setSenha('');
     } catch (err) {
