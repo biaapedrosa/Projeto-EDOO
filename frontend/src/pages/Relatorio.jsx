@@ -14,7 +14,8 @@ export default function Relatorio() {
   const carregarRelatorio = async () => {
     setLoading(true);
     try {
-      const response = await relatorioService.getDadosGerais();
+      // getRelatorio() — nome correto do método no api.js
+      const response = await relatorioService.getRelatorio();
       setDados(response.data);
     } catch (error) {
       console.error("Erro ao buscar relatório:", error);
@@ -91,7 +92,7 @@ export default function Relatorio() {
       {dados.totalPedidos === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
           <BarChart3 size={64} className="mb-4 opacity-20" strokeWidth={1} />
-          <p>Nenhum dado disponível para o período selecionado.</p>
+          <p>Nenhum dado disponível ainda.</p>
         </div>
       )}
     </div>

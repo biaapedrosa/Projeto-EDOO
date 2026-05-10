@@ -8,7 +8,7 @@ export default function Pedidos() {
   const [carrinho, setCarrinho] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Carrega produtos para poder selecionar no pedido
+  // Carrega produtos disponíveis para selecionar no pedido
   useEffect(() => {
     produtoService.getProdutos()
       .then(res => setProdutosDisponiveis(res.data))
@@ -19,12 +19,20 @@ export default function Pedidos() {
     const produto = produtosDisponiveis.find(p => p.id === parseInt(produtoId));
     if (!produto) return;
 
-    setCarrinho([...carrinho, { 
-      produtoId: produto.id, 
-      nome: produto.nome, 
-      quantidade: 1, 
-      preco: produto.preco 
-    }]);
+    // Verifica se o produto já está no carrinho — se sim, aumenta a quantidade
+    const existente = carrinho.findIndex(i => i.produtoId === produto.id);
+    if (existente >= 0) {
+      const novo = [...carrinho];
+      novo[existente].quantidade += 1;
+      setCarrinho(novo);
+    } else {
+      setCarrinho([...carrinho, {
+        produtoId: produto.id,
+        nome:      produto.nome,
+        quantidade: 1,
+        preco:     produto.preco
+      }]);
+    }
   };
 
   const removerDoCarrinho = (index) => {
@@ -38,10 +46,13 @@ export default function Pedidos() {
     setLoading(true);
     try {
       const dadosPedido = {
+        // backend lê "numeroMesa" no POST /pedidos
         numeroMesa: parseInt(mesa),
         itens: carrinho.map(item => ({
           produtoId: item.produtoId,
-          quantidade: item.quantidade
+          quantidade: item.quantidade,
+          // subtotal calculado no frontend e enviado para o backend
+          subtotal: item.preco * item.quantidade
         }))
       };
 
@@ -56,6 +67,8 @@ export default function Pedidos() {
     }
   };
 
+  const total = carrinho.reduce((acc, i) => acc + (i.preco * i.quantidade), 0);
+
   return (
     <div className="py-8 max-w-4xl mx-auto">
       <div className="mb-8">
@@ -64,13 +77,13 @@ export default function Pedidos() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Formulário de Entrada */}
+        {/* Formulário */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <form onSubmit={finalizarPedido} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Número da Mesa</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 required
                 value={mesa}
                 onChange={(e) => setMesa(e.target.value)}
@@ -81,8 +94,8 @@ export default function Pedidos() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Adicionar Produto</label>
-              <select 
-                onChange={(e) => adicionarAoCarrinho(e.target.value)}
+              <select
+                onChange={(e) => { adicionarAoCarrinho(e.target.value); e.target.value = ""; }}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none"
                 defaultValue=""
               >
@@ -93,9 +106,9 @@ export default function Pedidos() {
               </select>
             </div>
 
-            <button 
+            <button
               type="submit"
-              disabled={loading}
+              disabled={loading || carrinho.length === 0}
               className="w-full flex items-center justify-center gap-2 bg-[#1281b3] text-white py-3 rounded-lg font-bold hover:bg-[#0e668e] transition-colors disabled:bg-slate-300"
             >
               {loading ? "Enviando..." : <><Send size={18} /> Finalizar Pedido</>}
@@ -103,7 +116,7 @@ export default function Pedidos() {
           </form>
         </div>
 
-        {/* Resumo do Pedido (Carrinho) */}
+        {/* Carrinho */}
         <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
           <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <ShoppingCart size={20} /> Itens Selecionados
@@ -125,7 +138,7 @@ export default function Pedidos() {
               ))}
               <div className="border-t pt-3 mt-4">
                 <p className="text-right font-bold text-lg text-[#1281b3]">
-                  Total: R$ {carrinho.reduce((acc, i) => acc + (i.preco * i.quantidade), 0).toFixed(2)}
+                  Total: R$ {total.toFixed(2)}
                 </p>
               </div>
             </div>
