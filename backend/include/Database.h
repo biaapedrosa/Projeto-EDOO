@@ -6,18 +6,30 @@
 #include "Pedido.h"
 
 // Classe que faz a comunicação com o banco de dados SQLite
-// Abre e fecha a conexão, cria as tabelas e expõe métodos CRUD para cada entidade
+// Implementa o padrão de projeto Singleton (garante que só existe uma única instância de Database durante toda a execução do programa)
+// Só deve haver uma conexão com o banco
 class Database {
     private:
         sqlite3* db; // ponteiro para a conexão com o banco
 
+        // Construtor privado (impede criação direta com "Database db")
+        // Só é chamado internamente pelo getInstance()
+        Database(const std::string& caminho = "orla360.db");
+
+        // Destrutor fecha a conexão com o banco
+        ~Database();
+
         // Executa um comando SQL simples (sem retorno de linhas)
         void executar(const std::string& sql);
 
+        // Impede cópia e atribuição — parte essencial do Singleton
+        Database(const Database&)            = delete;
+        Database& operator=(const Database&) = delete;
+
     public:
-        // Abre (ou cria) o arquivo orla360.db e inicializa as tabelas
-        Database(const std::string& caminho = "orla360.db");
-        ~Database();
+        // Ponto de acesso global à instância única
+        // Na primeira chamada cria o objeto e nas seguintes retorna o mesmo
+        static Database& getInstance(const std::string& caminho = "orla360.db");
 
         // Cria uma nova barraca; retorna false se o usuário já existir
         bool registrarBarraca(const std::string& nome,

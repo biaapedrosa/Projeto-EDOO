@@ -4,8 +4,9 @@
 #include "include/routes.h"
 
 int main() {
-    // Inicializa o banco de dados — cria orla360.db se não existir
-    Database db;
+    // Singleton obtém a única instância do banco de dados
+    // Na primeira chamada cria o objeto e nas seguintes retorna o mesmo
+    Database& db = Database::getInstance();
 
     // Cria o servidor HTTP
     httplib::Server svr;

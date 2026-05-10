@@ -4,7 +4,16 @@
 #include <iomanip>
 #include <iostream>
 
-// CONSTRUTOR/ DESTRUTOR
+// SINGLETON
+// static garante que a variável só é criada uma vez,
+// mesmo que getInstance() seja chamado várias vezes em diferentes partes do código
+// É o padrão Singleton (uma única instância de Database para todo o programa)
+Database& Database::getInstance(const std::string& caminho) {
+    static Database instancia(caminho);
+    return instancia;
+}
+
+// CONSTRUTOR / DESTRUTOR
 Database::Database(const std::string& caminho) {
     if (sqlite3_open(caminho.c_str(), &db) != SQLITE_OK)
         throw std::runtime_error("Erro ao abrir banco: " + std::string(sqlite3_errmsg(db)));
@@ -78,7 +87,7 @@ void Database::executar(const std::string& sql) {
     }
 }
 
-//AUTENTICAÇÃO
+// AUTENTICAÇÃO
 bool Database::registrarBarraca(const std::string& nome,
                                  const std::string& usuario,
                                  const std::string& senhaHash) {
@@ -91,7 +100,7 @@ bool Database::registrarBarraca(const std::string& nome,
 
     bool ok = sqlite3_step(stmt) == SQLITE_DONE;
     sqlite3_finalize(stmt);
-    return ok; // false se o usuário já existir (UNIQUE constraint)
+    return ok;
 }
 
 std::string Database::loginBarraca(const std::string& usuario,
@@ -105,7 +114,7 @@ std::string Database::loginBarraca(const std::string& usuario,
 
     if (sqlite3_step(stmt) != SQLITE_ROW) {
         sqlite3_finalize(stmt);
-        return ""; // credenciais inválidas
+        return "";
     }
     int id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -114,7 +123,6 @@ std::string Database::loginBarraca(const std::string& usuario,
     std::string token = "barraca_" + std::to_string(id)
                       + "_" + std::to_string(time(nullptr));
 
-    // Salva o token no banco para validação futura
     sqlite3_prepare_v2(db,
         "UPDATE barracas SET token = ? WHERE id = ?;",
         -1, &stmt, nullptr);
@@ -133,7 +141,7 @@ int Database::getBarracaIdPorToken(const std::string& token) const {
         -1, &stmt, nullptr);
     sqlite3_bind_text(stmt, 1, token.c_str(), -1, SQLITE_TRANSIENT);
 
-    int id = -1; // -1 significa token inválido
+    int id = -1;
     if (sqlite3_step(stmt) == SQLITE_ROW)
         id = sqlite3_column_int(stmt, 0);
 
@@ -141,7 +149,7 @@ int Database::getBarracaIdPorToken(const std::string& token) const {
     return id;
 }
 
-//PRODUTOS
+// PRODUTOS
 void Database::inserirProduto(const Produto& p, const std::string& tipo,
                                int volume_ml, const std::string& tipo_bebida,
                                bool alcoolica, bool vegana,
@@ -259,7 +267,7 @@ bool Database::atualizarQuantidadeProduto(int id, int novaQtd, int barraca_id) {
     return ok;
 }
 
-//PEDIDOS
+// PEDIDOS
 int Database::inserirPedido(int numeroMesa, int barraca_id) {
     sqlite3_stmt* stmt;
     time_t t = time(nullptr);
@@ -295,6 +303,7 @@ bool Database::inserirItemPedido(int pedidoId, int produtoId,
     bool ok = sqlite3_step(stmt) == SQLITE_DONE;
     sqlite3_finalize(stmt);
 
+    // Recalcula o total do pedido somando todos os subtotais
     if (ok) {
         sqlite3_prepare_v2(db,
             "UPDATE pedidos SET total = "
@@ -351,7 +360,7 @@ bool Database::atualizarStatusPedido(int id, const std::string& status, int barr
     return ok;
 }
 
-//RELATÓRIO
+// RELATÓRIO
 std::string Database::getRelatorioJson(int barraca_id) const {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2);
@@ -379,8 +388,8 @@ std::string Database::getRelatorioJson(int barraca_id) const {
     sqlite3_prepare_v2(db, R"(
         SELECT p.nome, SUM(i.quantidade) as total
         FROM itens_pedido i
-        JOIN produtos p ON p.id = i.produto_id
-        JOIN pedidos   pd ON pd.id = i.pedido_id
+        JOIN produtos p  ON p.id  = i.produto_id
+        JOIN pedidos  pd ON pd.id = i.pedido_id
         WHERE pd.barraca_id = ?
         GROUP BY p.id
         ORDER BY total DESC
