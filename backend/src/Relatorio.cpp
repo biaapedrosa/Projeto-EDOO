@@ -26,7 +26,7 @@ std::string Relatorio::produtosMaisVendidos() const {
     std::map<std::string, int> contagem;
     for (const auto& pedido : m_pedidos) {
         for (const auto& item : pedido.getItens()) {
-            contagem[item.getProduto().getNome()] += item.getQuantidade();
+            contagem[item.getNomeProduto()] += item.getQuantidade();
         }
     }
 
