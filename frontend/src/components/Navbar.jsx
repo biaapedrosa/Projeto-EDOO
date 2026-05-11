@@ -32,7 +32,7 @@ export default function Navbar() {
           <div className="bg-[#1281b3] text-white p-1.5 rounded-full">
             <Umbrella size={20} />
           </div>
-          Barracas<span className="text-[#1281b3]">Recife</span>
+          <span className="text-[#1281b3]">Orla360</span>
         </Link>
 
         {/* Mobile Menu Button */}
