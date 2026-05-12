@@ -14,10 +14,8 @@ int main() {
     // Registra todas as rotas (produtos, estoque, pedidos, relatório)
     registrarRotas(svr, db);
 
-    std::cout << "╔══════════════════════════════╗\n";
-    std::cout << "║   Orla360 — Servidor HTTP    ║\n";
-    std::cout << "║   Rodando em :8080           ║\n";
-    std::cout << "╚══════════════════════════════╝\n";
+    std::cout << "   Orla360 — Servidor HTTP    \n";
+    std::cout << "      Rodando em :8080        \n";
     std::cout << "Pressione Ctrl+C para encerrar.\n\n";
 
     // Inicia o servidor — bloqueia até Ctrl+C
