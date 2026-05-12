@@ -1,31 +1,66 @@
-#include <iostream>
 #include "../include/Estoque.h"
+#include <iostream>
+#include <stdexcept>
+#include <sstream>
 
-void Estoque::adicionarProduto(const Produto& p) {
-    produtos.push_back(p);
+using namespace std;
+
+void Estoque::adicionarProduto(unique_ptr<Produto> p) {
+    // Impede produtos duplicados pelo id
+    for (const auto& existente : m_produtos) {
+        if (existente->getId() == p->getId())
+            throw invalid_argument(
+                "Produto com id " + to_string(p->getId()) + " já existe no estoque.");
+    }
+    m_produtos.push_back(move(p));
 }
 
-void Estoque::listarProdutos() {
-    if (produtos.empty()) {
-        std::cout << "Nenhum produto cadastrado." << std::endl;
-    } else {
-        for (size_t i = 0; i < produtos.size(); i++) {
-            std::cout << produtos[i].toString() << std::endl;
-        }
+void Estoque::listarProdutos() const {
+    if (m_produtos.empty()) {
+        cout << "Nenhum produto cadastrado." << endl;
+        return;
+    }
+    for (const auto& p : m_produtos) {
+        cout << p->toString() << endl;
     }
 }
 
-Produto* Estoque::buscarProduto(const std::string& nome) {
-    for (size_t i = 0; i < produtos.size(); i++) {
-        if (nome == produtos[i].getNome()) {
-            return &produtos[i];
-        }
+Produto* Estoque::buscarProduto(const string& nome) {
+    for (auto& p : m_produtos) {
+        if (nome == p->getNome())
+            return p.get();
     }
     return nullptr;
 }
 
-std::vector<std::string> Estoque::verificarItensBaixos() const {
-    std::vector<std::string> itensBaixos;
+Produto* Estoque::buscarProdutoPorId(int id) {
+    for (auto& p : m_produtos) {
+        if (id == p->getId())
+            return p.get();
+    }
+    return nullptr;
+}
 
-    return itensBaixos;
+const vector<unique_ptr<Produto>>& Estoque::getProdutos() const {
+    return m_produtos;
+}
+
+vector<string> Estoque::verificarItensBaixos() const {
+    vector<string> baixos;
+    for (const auto& p : m_produtos) {
+        if (p->getQuantidadeEmEstoque() <= ESTOQUE_MINIMO)
+            baixos.push_back(p->getNome());
+    }
+    return baixos;
+}
+
+string Estoque::toJson() const {
+    ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < m_produtos.size(); ++i) {
+        oss << m_produtos[i]->toJson();
+        if (i + 1 < m_produtos.size()) oss << ",";
+    }
+    oss << "]";
+    return oss.str();
 }

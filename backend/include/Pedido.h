@@ -27,10 +27,10 @@ private:
     void recalcularTotal();   // metodo privado auxiliar
  
 public:
-    Pedido(int id, const int numeroMesa);
+    Pedido(int id, int numeroMesa);
  
     // adiciona um item e lança se quantidade <= 0
-    void adicionarItem(const Produto* produto, int quantidade);
+    void adicionarItem(const Produto& produto, int quantidade);
  
     // remove um item pelo índice
     bool removerItem(int index);
@@ -50,7 +50,6 @@ public:
     const std::vector<ItemPedido>& getItens()       const { return m_itens; }
  
     double getValorTotal() const;
-    std::vector<Produto> getProdutos() const;
 
     std::string toJson() const;
 };
