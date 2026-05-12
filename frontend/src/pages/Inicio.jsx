@@ -2,6 +2,9 @@ import { Umbrella, Package, ShoppingCart, Archive, BarChart2 } from 'lucide-reac
 import { Link } from 'react-router-dom';
 
 export default function Inicio() {
+  // Verifica se está logado para esconder o botão "Começar agora"
+  const token = localStorage.getItem('token');
+
   const features = [
     { title: 'Cadastro de Barracas', desc: 'Registre sua barraca e localização na orla', icon: <Umbrella className="text-[#1281b3]" size={24} /> },
     { title: 'Gestão de Produtos', desc: 'Cadastre e gerencie seus produtos e preços', icon: <Package className="text-[#1281b3]" size={24} /> },
@@ -15,7 +18,7 @@ export default function Inicio() {
       {/* Banner */}
       <div className="bg-[#1281b3] rounded-2xl p-8 md:p-12 text-white shadow-lg relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEwIDB2MjBtLTEwLTEwaDIwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')]"></div>
-        
+
         <div className="relative z-10 max-w-2xl">
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
             Gestão inteligente para sua barraca de praia ⛱️
@@ -23,9 +26,13 @@ export default function Inicio() {
           <p className="text-blue-100 text-lg mb-8 max-w-xl">
             Controle produtos, pedidos, estoque e vendas da sua barraca na orla de Recife de forma simples e organizada.
           </p>
-          <Link to="/barracas" className="inline-block bg-[#f49342] hover:bg-[#e07d2b] text-white font-medium px-6 py-3 rounded-md transition-colors">
-            Começar agora →
-          </Link>
+
+          {/* Botão só aparece quando NÃO está logado */}
+          {!token && (
+            <Link to="/barracas" className="inline-block bg-[#f49342] hover:bg-[#e07d2b] text-white font-medium px-6 py-3 rounded-md transition-colors">
+              Começar agora →
+            </Link>
+          )}
         </div>
       </div>
 

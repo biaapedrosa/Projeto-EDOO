@@ -6,7 +6,7 @@ export default function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Lê o nome da barraca salvo no localStorage após o login
+  const token      = localStorage.getItem('token');
   const nomeBarraca = localStorage.getItem('nomeBarraca');
 
   const handleLogout = () => {
@@ -15,14 +15,21 @@ export default function Navbar() {
     window.location.href = '/barracas';
   };
 
-  const navLinks = [
-    { name: 'Início',    path: '/',          icon: <Home size={18} /> },
-    { name: 'Barracas',  path: '/barracas',  icon: <Umbrella size={18} /> },
+  // Links sempre visíveis
+  const linksPublicos = [
+    { name: 'Início',   path: '/',         icon: <Home size={18} /> },
+    { name: 'Barracas', path: '/barracas', icon: <Umbrella size={18} /> },
+  ];
+
+  // Links visíveis apenas quando logado
+  const linksProtegidos = [
     { name: 'Produtos',  path: '/produtos',  icon: <Package size={18} /> },
     { name: 'Pedidos',   path: '/pedidos',   icon: <ShoppingCart size={18} /> },
     { name: 'Estoque',   path: '/estoque',   icon: <Archive size={18} /> },
     { name: 'Relatório', path: '/relatorio', icon: <BarChart2 size={18} /> },
   ];
+
+  const navLinks = token ? [...linksPublicos, ...linksProtegidos] : linksPublicos;
 
   return (
     <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
@@ -101,7 +108,7 @@ export default function Navbar() {
             );
           })}
 
-          {/* Perfil no mobile */}
+          {/* Logout no mobile */}
           {nomeBarraca && (
             <button
               onClick={handleLogout}
