@@ -5,23 +5,29 @@
 
 using namespace std;
 
+//Define todas as portas de entrada do sistema
+
 //CORS
+//Libera o acesso ao servidor para qualquer origem
 static void setCors(httplib::Response& res) {
     res.set_header("Access-Control-Allow-Origin",  "*");
     res.set_header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-//PARSER JSON SIMPLES
+//JSON é o formato que os sistemas usam para trocar informações
+//Essa função extrai um texto de dentro de uma mensagem JSON
 static string getJsonString(const string& json, const string& chave) {
-    string busca = "\"" + chave + "\":\"";
-    size_t pos = json.find(busca);
+    string busca = "\"" + chave + "\":\""; // monta o padrão que está procurando ex: "nome":"
+    size_t pos = json.find(busca); // procura esse padrão no texto
     if (pos == string::npos) return "";
     pos += busca.size();
     size_t fim = json.find("\"", pos);
     return json.substr(pos, fim - pos);
 }
 
+//Extrai um número de dentro de uma mensagem JSON
+//Funciona igual à função anterior, mas para números (preco, quantidade)
 static double getJsonNumber(const string& json, const string& chave) {
     string busca = "\"" + chave + "\":";
     size_t pos = json.find(busca);
@@ -30,6 +36,7 @@ static double getJsonNumber(const string& json, const string& chave) {
     return stod(json.substr(pos));
 }
 
+//Extrai um valor verdadeiro ou falso de um JSON.
 static bool getJsonBool(const string& json, const string& chave) {
     string busca = "\"" + chave + "\":";
     size_t pos = json.find(busca);
@@ -38,15 +45,19 @@ static bool getJsonBool(const string& json, const string& chave) {
     return json.substr(pos, 4) == "true";
 }
 
-// HASH SIMPLES
+// Transforma a senha em um código embaralhado
+// Por segurança não guardamos a senha real no banco de dados
+// Passamos ela por uma fórmula matemática que gera um número único 
+// Hash simples:
 static string hashSenha(const string& senha) {
-    unsigned long h = 5381;
+    unsigned long h = 5381; // valor inicial padrão do algoritmo djb2
     for (char c : senha)
         h = ((h << 5) + h) + static_cast<unsigned char>(c);
     return to_string(h);
 }
 
 // MIDDLEWARE DE AUTENTICAÇÃO
+// Verifica se quem está fazendo um pedido tem permissão
 static int autenticar(const httplib::Request& req, httplib::Response& res, Database& db) {
     auto it = req.headers.find("Authorization");
     if (it == req.headers.end()) {
@@ -70,28 +81,36 @@ static int autenticar(const httplib::Request& req, httplib::Response& res, Datab
 }
 
 //REGISTRO DE ROTAS
+//Cadastra todas as rotas/endereços 
 void registrarRotas(httplib::Server& svr, Database& db) {
 
     // Preflight CORS
+    // Antes de fazer um pedido real, o navegador manda uma pergunta perguntando se pode.
     svr.Options(".*", [](const httplib::Request&, httplib::Response& res) {
         setCors(res);
         res.status = 204;
     });
 
-    // --- AUTENTICAÇÃO ---
+    // AUTENTICAÇÃO 
+    // Cadastra uma nova barraca no sistema
+    // Quem usa: a tela de cadastro do frontend
+    // O que recebe: nome da barraca, nome de usuário e senha
     svr.Post("/auth/registro", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
+        // extrai os dados enviados pelo formulário de cadastro
         try {
             string nome    = getJsonString(req.body, "nome");
             string usuario = getJsonString(req.body, "usuario");
             string senha   = getJsonString(req.body, "senha");
 
+            // verifica se algum campo obrigatório ficou em branco
             if (nome.empty() || usuario.empty() || senha.empty()) {
                 res.status = 400;
                 res.set_content("{\"erro\":\"nome, usuario e senha são obrigatórios\"}", "application/json");
                 return;
             }
 
+            // tenta registrar no banco, se o usuário já existir retorna conflito (409)
             if (db.registrarBarraca(nome, usuario, hashSenha(senha))) {
                 res.status = 201;
                 res.set_content("{\"mensagem\":\"Barraca registrada com sucesso\"}", "application/json");
@@ -105,6 +124,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
+    // Faz o login da barraca no sistema
+    // Se usuário e senha estiverem corretos devolve um token que será usado nas próximas ações
     svr.Post("/auth/login", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         try {
@@ -124,7 +145,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // --- PRODUTOS ---
+    // PRODUTOS
+    // Cadastra um novo produto para a barraca logada criando objetos diferentes para cada tipo
     svr.Get("/produtos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -178,6 +200,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
+    // Remove um produto pelo seu ID
     svr.Delete("/produtos/:id", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -196,7 +219,9 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // --- ESTOQUE ---
+    // ESTOQUE
+    // Atualiza apenas o preço de um produto
+    // PATCH é usado quando queremos alterar só uma parte de um registro sem reescrever tudo
     svr.Patch("/estoque/:id/preco", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -216,6 +241,7 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
+    // Atualiza apenas a quantidade em estoque de um produto
     svr.Patch("/estoque/:id/quantidade", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -235,7 +261,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // --- PEDIDOS ---
+    // PEDIDOS
+    // Lista todos os pedidos da barraca logada
     svr.Get("/pedidos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -255,6 +282,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
+    // Cria um novo pedido com seus itens
+    // Recebe o número da mesa e uma lista de produtos com suas quantidades e subtotais
     svr.Post("/pedidos", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -291,6 +320,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
+    // Atualiza o status de um pedido
+    // Os estados possíveis são: ABERTO → EM_PREPARO → ENTREGUE (ou CANCELADO)
     svr.Patch("/pedidos/:id/status", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
@@ -313,7 +344,8 @@ void registrarRotas(httplib::Server& svr, Database& db) {
         }
     });
 
-    // --- RELATÓRIO ---
+    // RELATÓRIO
+    // Retorna um resumo financeiro/operacional da barraca (total vendido, pedidos, etc)
     svr.Get("/relatorio", [&db](const httplib::Request& req, httplib::Response& res) {
         setCors(res);
         int bid = autenticar(req, res, db);
