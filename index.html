@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orla360 - Sistema de Gestão de Barracas de Praia</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    
+    <header class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white py-20 px-4 text-center shadow-lg">
+        <div class="max-w-4xl mx-auto">
+            <span class="bg-cyan-500/30 text-cyan-100 text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                Projeto Acadêmico • CIn - UFPE
+            </span>
+            <h1 class="text-5xl font-extrabold mt-4 mb-2 tracking-tight">🏖️ Orla360</h1>
+            <p class="text-xl text-cyan-100 font-light max-w-2xl mx-auto mb-8">
+                Sistema inteligente de gestão para barracas de praia da orla de Recife, unindo a performance do C++ com a dinamicidade do React.
+            </p>
+            
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://github.com/biaapedrosa/Projeto-EDOO" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg shadow transition flex items-center gap-2">
+                    <i class="fab fa-github"></i> Repositório
+                </a>
+                <a href="https://www.youtube.com/watch?v=ia1efVnXPkA" target="_blank" class="bg-white hover:bg-slate-100 text-blue-700 font-medium px-6 py-3 rounded-lg shadow transition flex items-center gap-2">
+                    <i class="fas fa-video"></i> Vídeo de Demonstração
+                </a>
+                <a href="https://docs.google.com/document/d/12_F8AZY80-R0LF7b_MacCj5Bh9tvN41zdpX0rdVEL68/edit?tab=t.0#heading=h.3w79yw78aqqq" target="_blank" class="bg-cyan-500 hover:bg-cyan-400 text-white font-medium px-6 py-3 rounded-lg shadow transition flex items-center gap-2">
+                    <i class="fas fa-file-alt"></i> Relatório Final
+                </a>
+            </div>
+
+            <div class="mt-8 text-sm text-cyan-200">
+                <p class="font-medium">Desenvolvido por:</p>
+                <p class="mt-1">Beatriz Freitas • Beatriz Pandolfi • Luísa Bispo • Marina Cabral</p>
+                <p class="text-xs mt-2 opacity-75">Disciplina: Estruturas de Dados Orientadas a Objetos (EDOO)</p>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="max-w-5xl mx-auto px-4 py-12">
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-950 mb-8 text-center">Conheça a Interface do Orla360</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-slate-200">
+                    <img src="./assets/tela-inicial.jpeg" alt="Screenshot da Tela Inicial do Orla360" class="w-full rounded-xl object-cover aspect-video">
+                    <p class="text-xs text-slate-500 mt-2 px-2 text-center">Dashboard principal com visão geral e acesso rápido.</p>
+                </div>
+
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-slate-200">
+                    <img src="./assets/tela-pedidos.png" alt="Screenshot da Tela de Pedidos" class="w-full rounded-xl object-cover aspect-video">
+                    <p class="text-xs text-slate-500 mt-2 px-2 text-center">Fluxo simplificado para criação e finalização de pedidos por mesa.</p>
+                </div>
+
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-slate-200">
+                    <img src="./assets/tela-produtos.png" alt="Screenshot da Tela de Gestão de Produtos" class="w-full rounded-xl object-cover aspect-video">
+                    <p class="text-xs text-slate-500 mt-2 px-2 text-center">Cadastro completo de itens, preços e categorias.</p>
+                </div>
+
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-slate-200">
+                    <img src="./assets/tela-estoque.jpeg" alt="Screenshot da Tela de Controle de Estoque" class="w-full rounded-xl object-cover aspect-video">
+                    <p class="text-xs text-slate-500 mt-2 px-2 text-center">Monitoramento e reposição de quantidades em tempo real.</p>
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="grid md:grid-cols-3 gap-8 mb-16">
+            <div class="md:col-span-2">
+                <h2 class="text-3xl font-bold text-slate-950 mb-4">O que é o Orla360?</h2>
+                <p class="text-slate-600 leading-relaxed mb-4">
+                    O Orla360 é um sistema de informação robusto projetado especificamente para as necessidades logísticas e operacionais dos estabelecimentos da orla de Recife. Ele transforma a gestão manual de estoque, pedidos e faturamento em uma operação digital centralizada e ágil.
+                </p>
+                <p class="text-slate-600 leading-relaxed">
+                    A aplicação foi construída dividindo as responsabilidades de forma clara: um backend robusto e tipado em <strong>C++</strong> atuando como API REST local, persistido em <strong>SQLite3</strong>, e uma interface rica e responsiva em <strong>React com Tailwind CSS</strong> para o operador da barraca.
+                </p>
+            </div>
+            
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-lg text-slate-950 mb-4 flex items-center gap-2">
+                    <i class="fas fa-layer-group text-blue-600"></i> Tecnologias
+                </h3>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-600">Backend</span>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-semibold">C++</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-600">Servidor HTTP</span>
+                        <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs">cpp-httplib</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-600">Banco de Dados</span>
+                        <span class="bg-sky-100 text-sky-800 px-2 py-0.5 rounded text-xs font-semibold">SQLite3</span>
+                    </li>
+                    <li class="flex justify-between border-b border-slate-100 pb-2">
+                        <span class="font-medium text-slate-600">Frontend</span>
+                        <span class="bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs font-semibold">React + Vite</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span class="font-medium text-slate-600">Estilização</span>
+                        <span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-xs">Tailwind CSS</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-950 mb-8 text-center">Funcionalidades do Ecossistema</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-cyan-100 text-cyan-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Multibarracas & Autenticação</h3>
+                    <p class="text-sm text-slate-600">Isolamento de dados por estabelecimento através de rotas dedicadas de registro e login seguro.</p>
+                </div>
+
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Gestão de Cardápio (CRUD)</h3>
+                    <p class="text-sm text-slate-600">Controle total sobre produtos comercializados, divididos nativamente entre Comidas e Bebidas com propriedades específicas.</p>
+                </div>
+
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Fluxo de Pedidos em Real-Time</h3>
+                    <p class="text-sm text-slate-600">Criação, acompanhamento de status de preparo/entrega e cancelamento integrado à retaguarda da barraca.</p>
+                </div>
+
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-boxes-stacked"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Alertas de Estoque Crítico</h3>
+                    <p class="text-sm text-slate-600">Atualização automatizada de insumos a cada venda com gatilhos de aviso para produtos com quantidade abaixo do limite.</p>
+                </div>
+
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Inteligência de Vendas</h3>
+                    <p class="text-sm text-slate-600">Geração de relatórios com cálculo de faturamento bruto, identificação automatizada do item mais vendido e métricas de desempenho.</p>
+                </div>
+
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-rose-100 text-rose-700 rounded-lg flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-950 mb-2">Conformidade e Local-First</h3>
+                    <p class="text-sm text-slate-600">Uso do SQLite garantindo privacidade total. Os dados financeiros e de estoque rodam localmente na máquina do cliente.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="bg-slate-900 text-slate-100 p-8 rounded-2xl shadow-inner mb-16">
+            <h2 class="text-2xl font-bold mb-6 text-white text-center">Implementação dos Conceitos de POO</h2>
+            <div class="grid sm:grid-cols-2 gap-6 text-sm">
+                <div class="border-l-2 border-cyan-500 pl-4">
+                    <h4 class="font-bold text-cyan-400 mb-1">Encapsulamento</h4>
+                    <p class="text-slate-400">Proteção de estados críticos do negócio usando atributos privados e acessores restritos em todas as entidades (Barraca, Pedido, Estoque).</p>
+                </div>
+                <div class="border-l-2 border-cyan-500 pl-4">
+                    <h4 class="font-bold text-cyan-400 mb-1">Herança e Polimorfismo</h4>
+                    <p class="text-slate-400">Especialização da classe abstrata <code>Produto</code> em <code>Bebida</code> e <code>Comida</code>, sobrescrevendo métodos virtuais puros como <code>toJson()</code>.</p>
+                </div>
+                <div class="border-l-2 border-cyan-500 pl-4">
+                    <h4 class="font-bold text-cyan-400 mb-1">Padrão Singleton</h4>
+                    <p class="text-slate-400">Garantia de conexão única e centralizada com a base de dados SQLite através da instância restrita da classe <code>Database</code>.</p>
+                </div>
+                <div class="border-l-2 border-cyan-500 pl-4">
+                    <h4 class="font-bold text-cyan-400 mb-1">Gerenciamento Dinâmico</h4>
+                    <p class="text-slate-400">Uso moderno de ponteiros inteligentes (<code>unique_ptr</code>) para evitar memory leaks na manipulação polimórfica de listas de produtos.</p>
+                </div>
+            </div>
+        </section>
+
+      
+        <section class="mb-16 border-t border-slate-200 pt-12">
+            <h2 class="text-2xl font-bold text-slate-950 mb-4">Uso Consciente de Inteligência Artificial</h2>
+            <p class="text-slate-600 leading-relaxed mb-4">
+                Em alinhamento com as diretrizes do Centro de Informática da UFPE, ferramentas de IA generativa foram integradas ao ciclo de desenvolvimento estritamente como co-pilotos de engenharia. 
+            </p>
+            <p class="text-slate-600 leading-relaxed">
+                As principais frentes envolveram a aceleração de estudos sobre a integração de ponteiros C com wrappers C++, resolução de conflitos de tipos em compilação multiplataforma e validação estrutural do padrão de projeto adotado na camada de persistência.
+            </p>
+        </section>
+
+    </main>
+
+    
+    <footer class="bg-slate-900 text-slate-400 text-center py-8 text-xs border-t border-slate-800">
+        <p>© 2026 Orla360 • Centro de Informática - UFPE.</p>
+        <p class="mt-1">Desenvolvido para fins didáticos na disciplina de EDOO.</p>
+    </footer>
+
+</body>
+</html>
